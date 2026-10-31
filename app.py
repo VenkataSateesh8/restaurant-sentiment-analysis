@@ -11,9 +11,8 @@ from nltk.stem.snowball import SnowballStemmer
 nltk.download("stopwords", quiet=True)
 
 
-# Load the saved model and vectorizer
-model = joblib.load("sentiment_model.pkl")
-tfidf = joblib.load("tfidf_vectorizer.pkl")
+# Load the final trained pipeline
+model = joblib.load("sentiment_pipeline.pkl")
 
 
 # Text preprocessing
@@ -42,18 +41,12 @@ def preprocess_text(text):
     return " ".join(words)
 
 
-# Prediction function
 def predict_sentiment(review):
     cleaned_review = preprocess_text(review)
 
-    review_tf = tfidf.transform([cleaned_review])
+    prediction = model.predict([cleaned_review])[0]
 
-    prediction = model.predict(review_tf)[0]
-
-    if prediction == 1:
-        return "Positive 😊"
-    else:
-        return "Negative 😞"
+    return "Positive 😊" if prediction == 1 else "Negative 😞"
 
 
 # Streamlit interface
@@ -66,13 +59,12 @@ st.write(
 
 review = st.text_area(
     "Enter your review here:",
-    placeholder="Example: The food was delicious and the service was excellent."
+    placeholder="The food was delicious and the service was excellent."
 )
-
 
 if st.button("Predict Sentiment"):
 
-    if review.strip() == "":
+    if not review.strip():
         st.warning("Please enter a review first.")
 
     else:
